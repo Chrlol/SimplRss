@@ -1,30 +1,58 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using SmplRSS.Models;
+using SmplRSS.Utility;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
-namespace Simpl_Rss
+namespace SmplRSS
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        public MainPage()
+		public MainPage()
         {
             this.InitializeComponent();
+
         }
+		private async void LoadFeed(Uri url)
+		{
+			var feed = await Rss.Load(url);
+			FeedTitle.Text = feed.Title;
+			foreach (var item in feed.Feeditems)
+			{
+				AddRssItem(item);
+			}
+		}
+
+	    protected override async void OnNavigatedTo(NavigationEventArgs e)
+	    {
+		    base.OnNavigatedTo(e);
+		    var parameter = e.Parameter as RssFeed;
+		    if (parameter != null)
+		    {
+			    var feed = parameter;
+				LoadFeed(new Uri(feed.Url));
+		    }
+		    else
+		    {
+				LoadFeed(new Uri("http://www.feedforall.com/sample.xml"));
+			}
+	    }
+
+	    public void AddRssItem(RssFeeditem item)
+		{
+			Feed.Items?.Add(new RssItem
+			{
+				Item = item
+			});
+		}
+
+	    private async void ChooseFeed_OnTapped(object sender, TappedRoutedEventArgs e)
+	    {
+		    this.Frame.Navigate(typeof(ChooseFeed), "Hello");
+	    }
     }
 }
